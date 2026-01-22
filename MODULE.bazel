@@ -1,0 +1,16 @@
+"""Bazel toolchain for Google Cloud CLI (gcloud)."""
+
+module(
+    name = "tools_gcloud",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "platforms", version = "0.0.10")
+
+# Set up the gcloud CLI binary (downloads latest by default)
+gcloud = use_extension("//gcloud:gcloud.bzl", "gcloud")
+gcloud.download()
+use_repo(gcloud, "gcloud_toolchains")
+
+# Register toolchains for all platforms
+register_toolchains("@gcloud_toolchains//:all")
