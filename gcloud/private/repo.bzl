@@ -63,22 +63,21 @@ def _gcloud_toolchains_impl(repository_ctx):
             url = _GCLOUD_VERSION_URL,
             output = "components.json",
         )
-        components_content = repository_ctx.read("components.json")
-
-        # Parse the version from the JSON response
-        # The version is in the format: "version": "VERSION"
-        # We look for the SDK version which is typically at the top level
-        version_start = components_content.find('"version"')
-        if version_start == -1:
-            fail("Could not find version in components.json")
-
-        # Find the version value
-        colon_pos = components_content.find(":", version_start)
-        quote_start = components_content.find('"', colon_pos + 1)
-        quote_end = components_content.find('"', quote_start + 1)
-        version = components_content[quote_start + 1:quote_end]
-
+        components_data = json.decode(repository_ctx.read("components.json"))
         repository_ctx.delete("components.json")
+
+        # Prefer the top-level SDK version which matches the downloadable archive
+        version = components_data.get("version", "")
+        if not version:
+            for component in components_data.get("components", []):
+                if component.get("id") == "core":
+                    version_info = component.get("version", {})
+                    version = version_info.get("version_string") or version_info.get("build_number", "")
+                    break
+
+        if not version:
+            fail("Could not determine Google Cloud CLI version from components-2.json")
+        version = str(version)
 
     # Download the archive
     archive_name = _get_archive_name(version, os_name, arch)
