@@ -4,7 +4,7 @@ Bazel toolchain for [Google Cloud CLI (gcloud)](https://cloud.google.com/sdk/gcl
 
 ## Setup
 
-### Using BuildBuddy Registry (recommended)
+### Using BuildBuddy Registry (Recommended)
 
 Add the BuildBuddy registry to your `.bazelrc`:
 
@@ -12,13 +12,21 @@ Add the BuildBuddy registry to your `.bazelrc`:
 common --registry=https://registry.buildbuddy.io/
 ```
 
-Then add to your `MODULE.bazel`:
+Then add the dependency to your `MODULE.bazel`:
 
 ```starlark
-bazel_dep(name = "tools_gcloud", version = "github.buildbuddy-rules+main")
+bazel_dep(name = "tools_gcloud", version = "main-github.buildbuddy-rules")
 ```
 
-The version format is `github.<org>+<branch_or_tag>`. Use `+main` for the latest from the main branch, or specify a tag like `+v0.1.0`.
+To pin to a specific tag or commit, replace `main` with the tag or commit SHA:
+
+```starlark
+# Pin to a tag
+bazel_dep(name = "tools_gcloud", version = "v0.1.0-github.buildbuddy-rules")
+
+# Pin to a specific commit
+bazel_dep(name = "tools_gcloud", version = "87235fe-github.buildbuddy-rules")
+```
 
 ### Using git_override
 
@@ -40,8 +48,6 @@ The toolchain is automatically registered and downloads the latest gcloud CLI.
 To pin a specific gcloud CLI version:
 
 ```starlark
-bazel_dep(name = "tools_gcloud", version = "github.buildbuddy-rules+main")
-
 gcloud = use_extension("@tools_gcloud//gcloud:gcloud.bzl", "gcloud")
 gcloud.download(version = "503.0.0")
 ```
