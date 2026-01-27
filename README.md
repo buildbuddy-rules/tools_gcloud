@@ -28,6 +28,23 @@ gcloud.download(version = "503.0.0")
 
 ## Usage
 
+### In genrule
+
+Use the toolchain in a genrule via `toolchains` and make variable expansion:
+
+```starlark
+load("@tools_gcloud//gcloud:defs.bzl", "GCLOUD_TOOLCHAIN_TYPE")
+
+genrule(
+    name = "my_genrule",
+    outs = ["project_info.json"],
+    cmd = "$(GCLOUD_BINARY) projects describe my-project --format=json > $@",
+    toolchains = [GCLOUD_TOOLCHAIN_TYPE],
+)
+```
+
+The `$(GCLOUD_BINARY)` make variable expands to the path of the gcloud binary.
+
 ### In custom rules
 
 Use the toolchain in your rule implementation:
@@ -60,23 +77,6 @@ my_rule = rule(
     toolchains = [GCLOUD_TOOLCHAIN_TYPE],
 )
 ```
-
-### In genrule
-
-Use the toolchain in a genrule via `toolchains` and make variable expansion:
-
-```starlark
-load("@tools_gcloud//gcloud:defs.bzl", "GCLOUD_TOOLCHAIN_TYPE")
-
-genrule(
-    name = "my_genrule",
-    outs = ["project_info.json"],
-    cmd = "$(GCLOUD_BINARY) projects describe my-project --format=json > $@",
-    toolchains = [GCLOUD_TOOLCHAIN_TYPE],
-)
-```
-
-The `$(GCLOUD_BINARY)` make variable expands to the path of the gcloud binary.
 
 ### Public API
 
