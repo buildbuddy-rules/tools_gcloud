@@ -9,12 +9,16 @@ GcloudInfo = provider(
 
 def _gcloud_toolchain_impl(ctx):
     """Implementation of the gcloud toolchain."""
+    default_info = DefaultInfo(files = depset([ctx.file.gcloud]))
     toolchain_info = platform_common.ToolchainInfo(
         gcloud_info = GcloudInfo(
             binary = ctx.file.gcloud,
         ),
     )
-    return [toolchain_info]
+    template_variable_info = platform_common.TemplateVariableInfo({
+        "GCLOUD_BINARY": ctx.file.gcloud.path,
+    })
+    return [default_info, toolchain_info, template_variable_info]
 
 gcloud_toolchain = rule(
     implementation = _gcloud_toolchain_impl,

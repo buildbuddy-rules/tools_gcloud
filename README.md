@@ -52,6 +52,23 @@ my_rule = rule(
 )
 ```
 
+### In genrule
+
+Use the toolchain in a genrule via `toolchains` and make variable expansion:
+
+```starlark
+load("@tools_gcloud//gcloud:defs.bzl", "GCLOUD_TOOLCHAIN_TYPE")
+
+genrule(
+    name = "my_genrule",
+    outs = ["project_info.json"],
+    cmd = "$(GCLOUD_BINARY) projects describe my-project --format=json > $@",
+    toolchains = [GCLOUD_TOOLCHAIN_TYPE],
+)
+```
+
+The `$(GCLOUD_BINARY)` make variable expands to the path of the gcloud binary.
+
 ### Public API
 
 From `@tools_gcloud//gcloud:defs.bzl`:
