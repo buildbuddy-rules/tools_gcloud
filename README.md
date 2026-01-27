@@ -11,7 +11,7 @@ bazel_dep(name = "tools_gcloud", version = "0.1.0")
 git_override(
     module_name = "tools_gcloud",
     remote = "https://github.com/buildbuddy-rules/tools_gcloud.git",
-    commit = "9fc9ce9821a03d6af4e48e9f9ddfb8bd3e9ac5ee",
+    commit = "a7d3dc09f9360ed92cc8c9893035a57719d002e8",
 )
 ```
 
