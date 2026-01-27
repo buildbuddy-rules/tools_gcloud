@@ -39,15 +39,24 @@ def _my_rule_impl(ctx):
     toolchain = ctx.toolchains[GCLOUD_TOOLCHAIN_TYPE]
     gcloud_binary = toolchain.gcloud_info.binary
 
-    # Use gcloud_binary in your actions
-    ctx.actions.run(
-        executable = gcloud_binary,
-        arguments = ["--help"],
-        # ...
+    out = ctx.actions.declare_file(ctx.label.name + ".json")
+    ctx.actions.run_shell(
+        outputs = [out],
+        tools = [gcloud_binary],
+        command = "{gcloud} projects describe {project} --format=json > {out}".format(
+            gcloud = gcloud_binary.path,
+            project = ctx.attr.project,
+            out = out.path,
+        ),
+        use_default_shell_env = True,
     )
+    return [DefaultInfo(files = depset([out]))]
 
 my_rule = rule(
     implementation = _my_rule_impl,
+    attrs = {
+        "project": attr.string(mandatory = True),
+    },
     toolchains = [GCLOUD_TOOLCHAIN_TYPE],
 )
 ```
