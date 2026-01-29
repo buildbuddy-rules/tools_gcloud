@@ -11,11 +11,11 @@ bazel_dep(name = "tools_gcloud", version = "0.1.0")
 git_override(
     module_name = "tools_gcloud",
     remote = "https://github.com/buildbuddy-rules/tools_gcloud.git",
-    commit = "8424252420372e3a62786a27b4e37c38e21a2ab3",
+    commit = "0fcff7d8b061745e8089916dcee5294efc003144",
 )
 ```
 
-The toolchain is automatically registered and downloads the latest gcloud CLI.
+The toolchain is automatically registered. By default, it downloads version `554.0.0` with SHA256 verification for reproducible builds.
 
 ### Pinning a gcloud version
 
@@ -23,8 +23,19 @@ To pin a specific gcloud CLI version:
 
 ```starlark
 gcloud = use_extension("@tools_gcloud//gcloud:gcloud.bzl", "gcloud")
-gcloud.download(version = "503.0.0")
+gcloud.download(version = "550.0.0")
 ```
+
+### Using the latest version
+
+To always fetch the latest version:
+
+```starlark
+gcloud = use_extension("@tools_gcloud//gcloud:gcloud.bzl", "gcloud")
+gcloud.download(use_latest = True)
+```
+
+Note: When using `use_latest`, SHA256 verification is not available as hashes cannot be fetched automatically from Google's API.
 
 ## Usage
 
