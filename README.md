@@ -95,7 +95,26 @@ From `@tools_gcloud//gcloud:defs.bzl`:
 - `linux_arm64`
 - `linux_amd64`
 
+## Authentication
+
+gcloud requires authentication to access Google Cloud resources. Since Bazel actions run in a sandbox, you cannot rely on local gcloud configuration. Instead, pass an access token via environment variable.
+
+### Usage
+
+Pass the token on the command line using your existing gcloud authentication:
+
+```bash
+bazel build //... --action_env=CLOUDSDK_AUTH_ACCESS_TOKEN=$(gcloud auth print-access-token)
+```
+
+The token is automatically picked up by gcloud commands in your actions—no additional setup needed in your rules.
+
+Access tokens expire after 1 hour by default. For longer builds, you can extend the token lifetime (up to 12 hours):
+
+```bash
+bazel build //... --action_env=CLOUDSDK_AUTH_ACCESS_TOKEN=$(gcloud auth print-access-token --lifetime=43200)
+```
+
 ## Requirements
 
 - Bazel 7.0+ with bzlmod enabled
-- Google Cloud authentication configured for gcloud to function

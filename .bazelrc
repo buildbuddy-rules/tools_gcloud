@@ -1,0 +1,5 @@
+# Enable bzlmod by default
+common --enable_bzlmod
+
+# Pass through GCP authentication via access token
+build --action_env=CLOUDSDK_AUTH_ACCESS_TOKEN
