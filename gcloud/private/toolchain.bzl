@@ -33,3 +33,4 @@ gcloud_toolchain = rule(
 )
 
 GCLOUD_TOOLCHAIN_TYPE = "@tools_gcloud//gcloud:toolchain_type"
+GCLOUD_RUNTIME_TOOLCHAIN_TYPE = "@tools_gcloud//gcloud:runtime_toolchain_type"

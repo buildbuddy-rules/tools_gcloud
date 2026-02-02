@@ -89,13 +89,53 @@ my_rule = rule(
 )
 ```
 
+### In tests
+
+For tests that need to run the gcloud binary at runtime, use the runtime toolchain type. This ensures the binary matches the target platform where the test executes:
+
+```starlark
+load("@tools_gcloud//gcloud:defs.bzl", "GCLOUD_RUNTIME_TOOLCHAIN_TYPE")
+
+def _gcloud_test_impl(ctx):
+    toolchain = ctx.toolchains[GCLOUD_RUNTIME_TOOLCHAIN_TYPE]
+    gcloud_binary = toolchain.gcloud_info.binary
+
+    test_script = ctx.actions.declare_file(ctx.label.name + ".sh")
+    ctx.actions.write(
+        output = test_script,
+        content = """#!/bin/bash
+{gcloud} --version
+""".format(gcloud = gcloud_binary.short_path),
+        is_executable = True,
+    )
+    return [DefaultInfo(
+        executable = test_script,
+        runfiles = ctx.runfiles(files = [gcloud_binary]),
+    )]
+
+gcloud_test = rule(
+    implementation = _gcloud_test_impl,
+    test = True,
+    toolchains = [GCLOUD_RUNTIME_TOOLCHAIN_TYPE],
+)
+```
+
+### Toolchain types
+
+There are two toolchain types depending on your use case:
+
+- **`GCLOUD_TOOLCHAIN_TYPE`** - Use for build-time actions (genrules, custom rules). Selected based on the execution platform. Use this when gcloud's output isn't platform-specific.
+
+- **`GCLOUD_RUNTIME_TOOLCHAIN_TYPE`** - Use for tests or run targets where the gcloud binary executes on the target platform.
+
 ### Public API
 
 From `@tools_gcloud//gcloud:defs.bzl`:
 
 | Symbol | Description |
 |--------|-------------|
-| `GCLOUD_TOOLCHAIN_TYPE` | Toolchain type string for use in `toolchains` attribute |
+| `GCLOUD_TOOLCHAIN_TYPE` | Toolchain type for build actions (exec platform only) |
+| `GCLOUD_RUNTIME_TOOLCHAIN_TYPE` | Toolchain type for test/run (target platform) |
 | `GcloudInfo` | Provider with `binary` field containing the gcloud executable |
 | `gcloud_toolchain` | Rule for defining custom toolchain implementations |
 
