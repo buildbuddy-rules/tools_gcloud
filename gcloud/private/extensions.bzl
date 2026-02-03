@@ -69,23 +69,32 @@ _gcloud_toolchains_repo = repository_rule(
     implementation = _gcloud_toolchains_repo_impl,
 )
 
+def _find_modules(module_ctx):
+    """Find the root module and tools_gcloud module.
+
+    Toolchain configuration is only allowed in the root module, or in
+    tools_gcloud.
+    See https://github.com/bazelbuild/bazel/discussions/22024 for discussion.
+    """
+    root = None
+    tools_gcloud = None
+    for mod in module_ctx.modules:
+        if mod.is_root:
+            root = mod
+        if mod.name == "tools_gcloud":
+            tools_gcloud = mod
+    if root == None:
+        root = tools_gcloud
+    if tools_gcloud == None:
+        fail("Unable to find tools_gcloud module")
+    return root, tools_gcloud
+
 def _gcloud_impl(module_ctx):
     """Implementation of the gcloud module extension."""
+    root, tools_gcloud = _find_modules(module_ctx)
 
-    # Check for mismatched versions
-    root_download = None
-    versions = {}  # version -> download tag
-    for mod in module_ctx.modules:
-        for download in mod.tags.download:
-            if mod.is_root and not root_download:
-                root_download = download
-            if download.version and download.version not in versions:
-                versions[download.version] = download
-    if len(versions) > 1:
-        fail("Conflicting gcloud CLI versions requested: {}".format(", ".join(versions.keys())))
-
-    # Use specified version if any, otherwise use root module settings
-    download = versions.values()[0] if versions else root_download
+    downloads = root.tags.download or tools_gcloud.tags.download
+    download = downloads[0] if downloads else None
     version = download.version if download else ""
     sha256 = download.sha256 if download else {}
     use_latest = download.use_latest if download else False
