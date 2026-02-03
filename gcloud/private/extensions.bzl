@@ -71,22 +71,24 @@ _gcloud_toolchains_repo = repository_rule(
 
 def _gcloud_impl(module_ctx):
     """Implementation of the gcloud module extension."""
-    version = ""
-    sha256 = {}
-    use_latest = False
 
-    # Process download tags - use the first one's settings
+    # Check for mismatched versions
+    root_download = None
+    versions = {}  # version -> download tag
     for mod in module_ctx.modules:
         for download in mod.tags.download:
-            if download.version:
-                version = download.version
-            if download.sha256:
-                sha256 = download.sha256
-            if download.use_latest:
-                use_latest = download.use_latest
-            break
-        if version or use_latest:
-            break
+            if mod.is_root and not root_download:
+                root_download = download
+            if download.version and download.version not in versions:
+                versions[download.version] = download
+    if len(versions) > 1:
+        fail("Conflicting gcloud CLI versions requested: {}".format(", ".join(versions.keys())))
+
+    # Use specified version if any, otherwise use root module settings
+    download = versions.values()[0] if versions else root_download
+    version = download.version if download else ""
+    sha256 = download.sha256 if download else {}
+    use_latest = download.use_latest if download else False
 
     # Download the gcloud CLI for each platform
     for platform in _PLATFORMS:
